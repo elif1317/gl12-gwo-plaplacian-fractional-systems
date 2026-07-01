@@ -2,24 +2,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-from scipy.special import gamma as Gamma  # Q ve GL1-2'de kullanılacak
+from scipy.special import gamma as Gamma  
 
 
-# -----------------------------
+
 def parameters(n_eq, N):
     mu = 0.8
-    gamma_n = 1.2        # γ
-    nu = 0.75            # ν  (Lemma/Teorem’de kullanılan ikinci parametre)
-    rho_i = 0.5          # ρ (D_ρ mertebesi)
+    gamma_n = 1.2       
+    nu = 0.75             
+    rho_i = 0.5         
     p = 2
     q = 2
     alpha_n = 1.0 / N
-    lam = 1.0            # üç-nokta yoksa 1.0 alınabilir
-    sigma = 0.0          # üç-nokta katsayısı; yoksa 0
+    lam = 1.0            
+    sigma = 0.0          
     return mu, gamma_n, nu, rho_i, p, q, alpha_n, lam, sigma
 
 
-# -----------------------------
 def laplace_initial_guess(N, s_vals):
     y = s_vals**2 - s_vals**3
     y[0] = 0.0
@@ -31,18 +30,15 @@ def laplace_initial_guess(N, s_vals):
     return y
 
 
-# -----------------------------
+
 def tempered_norm(y_vals, alpha_vals, p):
-    # DÜZELTME: ((alpha * |y|) ** p) toplanmalı
+    
     return (np.sum((alpha_vals * np.abs(y_vals))**p))**(1.0/p)
 
 
-# =========================================================
+
 def gl12_caputo_katugampola(y_vals, t_vals, alpha, mu):
-    """
-    0<alpha<1 için GL1-2 şeması.
-    Katugampola ölçeği: t^μ üzerinde eşit aralık varsayımı.
-    """
+  
     N = len(y_vals)
     t_mu = t_vals**mu
     h = (t_mu[-1] - t_mu[0]) / (N - 1)
@@ -56,9 +52,9 @@ def gl12_caputo_katugampola(y_vals, t_vals, alpha, mu):
                - 0.5 * ((kj + 1) ** (1 - alpha) + kj ** (1 - alpha))
 
     for k in range(2, N):
-        # birinci farklar (t^μ üzerinde)
+        
         diff1 = (y_vals[1:k+1] - y_vals[0:k]) / h
-        # ikinci farklar
+       
         diff2 = (y_vals[2:k+1] - 2*y_vals[1:k] + y_vals[0:k-1]) / (h**2)
 
         a_idx = np.array([a_coeff(k - j) for j in range(1, k+1)])
@@ -72,31 +68,24 @@ def gl12_caputo_katugampola(y_vals, t_vals, alpha, mu):
     return D
 
 def caputo_katugampola_general(y_vals, t_vals, rho, mu):
-    """
-    ρ = m + β (m = floor(ρ), 0≤β<1).
-    Önce m kez klasik türev, sonra GL1–2 ile β kısmı.
-    """
+  
     m = int(np.floor(rho))
     beta = rho - m
 
     y_m = np.array(y_vals, dtype=float)
-    # m kez klasik türev (eşit olmayan t aralığına karşı gradient kullanıldı)
+    
     for _ in range(m):
         y_m = np.gradient(y_m, t_vals)
 
     if beta < 1e-12:
-        return y_m  # tam sayı mertebe
+        return y_m  
 
     return gl12_caputo_katugampola(y_m, t_vals, beta, mu)
 
-# -----------------------------
-# g_n(s, y, z) — Example 4.1 formu
-# -----------------------------
+
+
 def g_n(s, y, z, n=1, epsilon=1e-12):
-    """
-    g_n(s, y, z) = s*cos(nπs)/((s+n)^6 n^2)
-                   + s^{1/2}/(4(5-s)^2 (s+n)^2) * Σ_k cos(kπs)/(k+s)^9 * (y_k + z_k)
-    """
+   
     y = np.atleast_1d(y)
     z = np.atleast_1d(z)
 
@@ -112,13 +101,9 @@ def g_n(s, y, z, n=1, epsilon=1e-12):
     return term1 + term2
 
 
-# -----------------------------
+
 def Q_kernel(s, r, mu, gamma_val, nu, rho, lam, sigma):
-    """
-    Lemma (Green çekirdeği) ile birebir: Q(s,r; gamma=γ, nu=ν).
-    Parçalı tanım: s <= λ ve s >= λ için farklı kollar.
-    sigma = üç nokta katsayısı (yoksa 0).
-    """
+    
     s_mu, r_mu, lam_mu = s**mu, r**mu, lam**mu
     power = (nu + gamma_val - 1.0)
 
@@ -160,7 +145,7 @@ def Q_kernel(s, r, mu, gamma_val, nu, rho, lam, sigma):
             return - (s_mu**(nu + 1.0)) / Lambda * max(1.0 - r_mu, 0.0)**power
 
 
-# -----------------------------
+
 def F_p_operator(s_vals, y_vals, mu, gamma_val, nu, rho, lam, sigma, p, n_eq):
     
     N = len(s_vals)
@@ -189,7 +174,6 @@ def F_p_operator(s_vals, y_vals, mu, gamma_val, nu, rho, lam, sigma, p, n_eq):
     return F_vals
 
 
-# -----------------------------
 def gwo_p_laplacian(dim, n_eq=1, n_wolves=200, max_iter=100, tol=1e-5, seed=42):
     if seed is not None:
         np.random.seed(seed)
