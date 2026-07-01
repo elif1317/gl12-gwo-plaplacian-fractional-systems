@@ -1,0 +1,30 @@
+{
+  "title": "Hybrid GL1-2-GWO p-Laplacian fractional system experiment",
+  "N": 30,
+  "n_eq": 1,
+  "n_wolves": 8,
+  "max_iter": 5,
+  "tol": 1e-05,
+  "seed": 42,
+  "mu": 0.8,
+  "gamma_n": 1.2,
+  "nu": 0.75,
+  "rho_i": 0.5,
+  "p": 2,
+  "q": 2,
+  "alpha_n": 0.03333333333333333,
+  "lambda": 1.0,
+  "sigma": 0.0,
+  "w_0": 0.0,
+  "w_1": 0.01774993017575295,
+  "solution_norm": 0.016378320872485634,
+  "final_residual_norm": 0.018447831996951082,
+  "runtime_seconds": 0.29504966735839844,
+  "iterations_completed": 5,
+  "regional_amplitudes": {
+    "[0.0, 0.2]": 0.07004795652966692,
+    "[0.2, 0.5]": 1.6563207958187525,
+    "[0.5, 0.8]": 2.08052958929488,
+    "[0.8, 1.0]": 0.8681723099927223
+  }
+}

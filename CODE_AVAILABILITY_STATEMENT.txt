@@ -1,0 +1,27 @@
+{
+  "title": "GL1-2-GWO solver for p-Laplacian type fractional systems with Caputo-Katugampola derivatives",
+  "creators": [
+    {
+      "name": "Demir, Elif",
+      "affiliation": "Yildiz Technical University, Department of Mathematics"
+    },
+    {
+      "name": "Zeren, Yusuf",
+      "affiliation": "Yildiz Technical University, Department of Mathematics"
+    },
+    {
+      "name": "Demirci, Alpaslan",
+      "affiliation": "Yildiz Technical University, Department of Electrical Engineering"
+    }
+  ],
+  "description": "Reproducibility code for the GL1-2 discretization and Grey Wolf Optimization framework for nonlinear p-Laplacian type fractional systems with Caputo-Katugampola derivatives.",
+  "license": "MIT",
+  "upload_type": "software",
+  "keywords": [
+    "fractional differential equations",
+    "Caputo-Katugampola derivative",
+    "GL1-2 discretization",
+    "Grey Wolf Optimization",
+    "p-Laplacian"
+  ]
+}
