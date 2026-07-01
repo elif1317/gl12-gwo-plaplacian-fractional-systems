@@ -1,3 +1,0 @@
-Code Availability Statement
-
-The Python code used to generate the numerical findings of this study is openly available in Zenodo at https://doi.org/10.5281/zenodo.XXXXXXX and in the associated GitHub repository at https://github.com/elif1317/gl12-gwo-plaplacian-fractional-systems.
