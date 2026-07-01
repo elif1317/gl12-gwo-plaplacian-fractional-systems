@@ -1,21 +1,10 @@
-# -*- coding: utf-8 -*-
-"""
-@author: ELİF DEMİR
-"""
-
-# -*- coding: utf-8 -*-
-"""
-Laplace makalesi (Example 4.1, p=2) baz alınarak
-GWO ile p-Laplacian çözümü
-"""
 
 import numpy as np
 import matplotlib.pyplot as plt
 import time
 from scipy.special import gamma as Gamma  # Q ve GL1-2'de kullanılacak
 
-# -----------------------------
-# Parametreler (Laplace makalesine göre)
+
 # -----------------------------
 def parameters(n_eq, N):
     mu = 0.8
@@ -29,8 +18,7 @@ def parameters(n_eq, N):
     sigma = 0.0          # üç-nokta katsayısı; yoksa 0
     return mu, gamma_n, nu, rho_i, p, q, alpha_n, lam, sigma
 
-# -----------------------------
-# Makaledeki başlangıç fonksiyonu
+
 # -----------------------------
 def laplace_initial_guess(N, s_vals):
     y = s_vals**2 - s_vals**3
@@ -42,16 +30,13 @@ def laplace_initial_guess(N, s_vals):
         y[2] = 0.5 * (y[1] + y[3])
     return y
 
-# -----------------------------
-# Makaledeki norm (temperlenmiş l_p^α normu)
+
 # -----------------------------
 def tempered_norm(y_vals, alpha_vals, p):
     # DÜZELTME: ((alpha * |y|) ** p) toplanmalı
     return (np.sum((alpha_vals * np.abs(y_vals))**p))**(1.0/p)
 
-# =========================================================
-# GL1–2 Caputo–Katugampola ayrıklaştırması (0<alpha<1)
-# ve genel mertebe (m+β) için sarmalayıcı
+
 # =========================================================
 def gl12_caputo_katugampola(y_vals, t_vals, alpha, mu):
     """
@@ -126,8 +111,7 @@ def g_n(s, y, z, n=1, epsilon=1e-12):
     term2 = (s**0.5) * total / (4.0 * (5.0 - s)**2 * (s + n)**2)
     return term1 + term2
 
-# -----------------------------
-# Teorem 3.1 / Lemma'ya göre Q çekirdeği (p=2)
+
 # -----------------------------
 def Q_kernel(s, r, mu, gamma_val, nu, rho, lam, sigma):
     """
@@ -138,21 +122,21 @@ def Q_kernel(s, r, mu, gamma_val, nu, rho, lam, sigma):
     s_mu, r_mu, lam_mu = s**mu, r**mu, lam**mu
     power = (nu + gamma_val - 1.0)
 
-    # Normalizasyon (Lemma’daki Lambda)
-    # (güvenli kullanım için doğrudan kullanılan form)
+   
+    
     Lambda = (Gamma(nu + gamma_val) * Gamma(nu + 2.0)) / (Gamma(nu + gamma_val + 2.0) * Gamma(nu))
     Lambda *= (1.0 - sigma * lam**(mu * (nu + 1.0)))
 
     if abs(Lambda) < 1e-14:
         return 0.0  # singular durumu güvenli kapat
 
-    # Temel çekirdek (iç bölge)
+    
     def base_core(x_mu, y_mu):
         if x_mu >= y_mu:
             return (mu**(nu + gamma_val)) * (x_mu - y_mu)**power / Gamma(nu + gamma_val)
         return 0.0
 
-    # Sınır düzeltme
+    
     def boundary_corr(s_mu_local, r_mu_local):
         return (s_mu_local**(nu + 1.0)) / Lambda * (
             sigma * max(lam_mu - r_mu_local, 0.0)**power - max(1.0 - r_mu_local, 0.0)**power
@@ -175,22 +159,17 @@ def Q_kernel(s, r, mu, gamma_val, nu, rho, lam, sigma):
         else:  # lam < r <= 1
             return - (s_mu**(nu + 1.0)) / Lambda * max(1.0 - r_mu, 0.0)**power
 
-# -----------------------------
-# F operatörü (p=2) — GL1-2 türevi ile g_n kullanır
+
 # -----------------------------
 def F_p_operator(s_vals, y_vals, mu, gamma_val, nu, rho, lam, sigma, p, n_eq):
-    """
-    F[y](s) = ∫_0^1 Q(s,r;γ,ν) g_n(r, y, z) dr
-    Burada p=2 olduğundan Φ_p(D_ρ y) = D_ρ y ≡ z.
-    Sayısal integrasyon: birleşik trapez.
-    """
+    
     N = len(s_vals)
     F_vals = np.zeros_like(y_vals, dtype=float)
 
-    # 1) z = D_ρ y (Caputo–Katugampola, genel mertebe)
+   
     z_vals = caputo_katugampola_general(y_vals, s_vals, rho, mu)
 
-    # 2) Trapez ağırlıkları
+    
     dx = np.diff(s_vals)
     w = np.zeros_like(s_vals, dtype=float)
     if N > 1:
@@ -199,18 +178,17 @@ def F_p_operator(s_vals, y_vals, mu, gamma_val, nu, rho, lam, sigma, p, n_eq):
     if N > 2:
         w[1:-1] = (dx[:-1] + dx[1:]) / 2.0
 
-    # 3) g_n(r_j, y, z) vektörü
+    
     g_vec = np.array([g_n(r, y_vals, z_vals, n=n_eq) for r in s_vals], dtype=float)
 
-    # 4) s_i sabit, r değişken: ∑ Q(s_i,r_j) g(r_j) w_j
+    
     for i, s in enumerate(s_vals):
         Q_row = np.array([Q_kernel(s, r, mu, gamma_val, nu, rho, lam, sigma) for r in s_vals], dtype=float)
         F_vals[i] = np.sum(Q_row * g_vec * w)
 
     return F_vals
 
-# -----------------------------
-# GWO algoritması (Makale normu ile)
+
 # -----------------------------
 def gwo_p_laplacian(dim, n_eq=1, n_wolves=200, max_iter=100, tol=1e-5, seed=42):
     if seed is not None:
@@ -223,7 +201,7 @@ def gwo_p_laplacian(dim, n_eq=1, n_wolves=200, max_iter=100, tol=1e-5, seed=42):
     wolves = np.array([laplace_initial_guess(dim, s_vals) for _ in range(n_wolves)], dtype=float)
     wolves += np.random.normal(scale=0.01, size=wolves.shape)
 
-    # sınır koşulları
+    
     wolves[:, 0] = 0.0
     wolves[:, -1] = wolves[:, -2]
 
@@ -246,7 +224,7 @@ def gwo_p_laplacian(dim, n_eq=1, n_wolves=200, max_iter=100, tol=1e-5, seed=42):
         convergence_curve.append(alpha_score)
         solutions_over_time.append(alpha_pos.copy())
 
-        # GWO güncellemesi (yalın alfa-çekim sürümü)
+       
         a_param = 2 - t * (2 / max_iter)
         r1 = np.random.rand(n_wolves, dim)
         r2 = np.random.rand(n_wolves, dim)
@@ -255,7 +233,7 @@ def gwo_p_laplacian(dim, n_eq=1, n_wolves=200, max_iter=100, tol=1e-5, seed=42):
         D = np.abs(C * alpha_pos - wolves)
         wolves = alpha_pos - A * D
 
-        # sınır koşulu
+       
         wolves[:, 0] = 0.0
         wolves[:, -1] = wolves[:, -2]
 
@@ -264,7 +242,7 @@ def gwo_p_laplacian(dim, n_eq=1, n_wolves=200, max_iter=100, tol=1e-5, seed=42):
 
     return alpha_pos, convergence_curve, solutions_over_time, s_vals, wolves
 
-# ------------------- Ana Program -------------------
+
 if __name__ == "__main__":
     start_time = time.time()
     N = 100
@@ -273,7 +251,7 @@ if __name__ == "__main__":
     )
     elapsed_time = time.time() - start_time
 
-    # ------------------- Sonuçlar -------------------
+  
     print("\n--- Solution Results ---")
     print(f"w(0) = {solution[0]:.6f}")
     mu, gamma_n, nu, rho_i, p, q, alpha_n, lam, sigma = parameters(0, N)
@@ -281,7 +259,7 @@ if __name__ == "__main__":
     print(f"Norm: {tempered_norm(solution, np.full(N, alpha_n), p=2):.6f}")
     print(f"Runtime: {elapsed_time:.2f} seconds")
 
-    # ------------------- Grafikler -------------------
+    
     plt.figure(figsize=(14, 6))
     plt.subplot(1, 2, 1)
     for i, sol in enumerate(solutions_over_time[::10]):
@@ -306,7 +284,7 @@ if __name__ == "__main__":
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.show()
 
-    # Normun iterasyonlara göre evrimi
+   
     norm_curve = [tempered_norm(sol, np.full(N, alpha_n), p=2) for sol in solutions_over_time]
     plt.figure(figsize=(8, 5))
     plt.plot(range(1, len(norm_curve) + 1), norm_curve, marker='s')
@@ -317,7 +295,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     plt.show()
 
-    # ------------------- Farklı Kurt Sayıları için Yakınsama Eğrisi -------------------
+   
     plt.figure(figsize=(10, 6))
     for nw in [50, 100, 150, 200]:
         print(f"Çalışıyor: n_wolves = {nw}")
