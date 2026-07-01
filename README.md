@@ -28,12 +28,17 @@ The default parameters reproduce the main numerical setting reported in the pape
 ```text
 gl12_gwo_plaplacian.py                         Main reproducibility script
 requirements.txt                               Python dependencies
-CITATION.cff                                   Citation metadata for GitHub
+CITATION.cff                                   Citation metadata for GitHub and Zenodo
 .zenodo.json                                   Metadata used by Zenodo archiving
-LICENSE                                        MIT license template
-CODE_AVAILABILITY_STATEMENT.txt                Manuscript statement template
-response_to_editor_template.txt                Short response letter template
-src/original_updated_gwo_gl12_plaplace_sonnnn.py Original author script
+LICENSE                                        MIT license
+CODE_AVAILABILITY_STATEMENT.txt                Manuscript code availability statement template
+original_updated_gwo_gl12_plaplace_sonnnn.py   Original author script
+solution.csv                                   Representative numerical solution output
+convergence.csv                                Representative residual convergence output
+regional_amplitudes.csv                        Representative regional amplitude output
+summary.json                                   Summary of the representative run
+figure2_regional_amplitude.png                 Regional amplitude figure
+norm_evolution.png                             Norm evolution figure
 ```
 
 ## Installation
